@@ -36,11 +36,11 @@ xtf_test/<br>
 - `build/` 目录及生成文件不需要推送到 GitHub  
 - 建议在 `.gitignore` 中忽略以下内容：
 
-build/
- *.o
- *.exe
- *.user
- *.pro.user
+build/<br>
+ *.o<br>
+ *.exe<br>
+ *.user<br>
+ *.pro.user<br>
  *.qmake.stash
 
 ---
