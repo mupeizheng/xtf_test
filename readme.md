@@ -12,15 +12,15 @@
 
 ## 项目结构
 
-xtf_test/
- ├── build/                  # 构建输出目录（忽略推送）
- ├── main.cpp                # 主程序入口
- ├── mainwindow.*            # 主窗口代码
- ├── shengpubutu.*           # 声呐图像处理类
- ├── shengtutest.*           # 测试类
- ├── xtf.h                   # XTF 数据结构定义
- ├── xtf_test.pro            # Qt 项目文件
- └── README.md               # 项目说明
+xtf_test/<br>
+ ├── build/                  # 构建输出目录（忽略推送）<br>
+ ├── main.cpp                # 主程序入口<br>
+ ├── mainwindow.*            # 主窗口代码<br>
+ ├── shengpubutu.*           # 声呐图像处理类<br>
+ ├── shengtutest.*           # 测试类<br>
+ ├── xtf.h                   # XTF 数据结构定义<br>
+ ├── xtf_test.pro            # Qt 项目文件<br>
+ └── README.md               # 项目说明<br>
 
 ---
 
