@@ -28,6 +28,15 @@ public:
                           const QVector<std::vector<uint8_t>> &starboardData);
 
     void doBottomTrack();  // 新增：底部追踪
+    //移动平均平滑水线点
+    QVector<int> smoothLine(const QVector<int>& line, int window = 3);
+    //寻找更合适的定位
+    int detectBottomByEnergyRobust(const std::vector<uint8_t>& samples,int smoothSampleWin = 7,int smoothDeltaWin = 5, double deltaThreshold = 0.001, int consecRequired = 3);
+
+    //简单移动平均
+    static std::vector<double> movingAverage(const std::vector<double>& data, int win);
+    //
+    int findAppropriateStartIdx(const std::vector<uint8_t>& samples, int startIdx);
 
 protected:
     //不会生效

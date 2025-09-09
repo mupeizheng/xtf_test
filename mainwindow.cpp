@@ -29,12 +29,12 @@ void MainWindow::on_openFileButton_clicked()
     QVector<std::vector<uint8_t>> starboardData;
 
     reader.parseXtfHeader(fileName, portData, starboardData);
-    // for(int i=0; i<portData[0].size();++i){
+    // for(int i=2000; i<portData[0].size();++i){
     //     qDebug()<<"portData value"<< i<<": " <<portData[0][i];
     // }
-    for(int i=0; i<starboardData[0].size()*0.4;++i){
-        qDebug()<<"starboardData value"<< i<<": " <<starboardData[0][i];
-    }
+    // for(int i=0; i<starboardData[0].size()*0.4;++i){
+    //     qDebug()<<"starboardData value"<< i<<": " <<starboardData[0][i];
+    // }
 
     puTuLogic->createPingImages(portData, starboardData);
 }
