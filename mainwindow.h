@@ -19,6 +19,7 @@ public:
 private slots:
     void on_openFileButton_clicked();
     void on_bottomTrackButton_clicked(); // 新增：底部追踪按钮槽
+    void on_Imagefusion_clicked();
 
 private:
     Ui::MainWindow *ui;

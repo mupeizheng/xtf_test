@@ -104,11 +104,41 @@ void shengpubutu::doBottomTrack()
             }
         }
 
+
         if(ping == 0){
-            if(idx != -1)
-                prePortPing = idx;
-            else
-                prePortPing = samples.size() - 1;
+            // if(idx != -1)
+            //     prePortPing = idx;
+            // else
+            //     prePortPing = samples.size() - 1;
+            if(idx == -1)    idx = CustomStartIdx;
+            int bestmean = INT_MAX;
+            for(int i = idx; i< (int)samples.size(); ++i){
+                //平均最小值
+                if(samples[i]<=3){
+                    int localsum =0;
+                    int localcount=0;
+                    int window = 100;
+                    for (int k = 0; k < window; ++k) {
+                        int Pos = i + k;   // 从当前位置 i 往后
+                        if(Pos<0) Pos = 0;
+                        if (Pos < (int)samples.size()) {
+                            localsum += samples[Pos];
+                            localcount++;
+                        }else   break;
+                    }
+                    int localmean = localsum / std::max(1, localcount);
+
+                    // 经验阈值（越小越白）
+                    if (localmean <= 5 and localmean>0) {  // 阈值可调
+                        // candidate = i;
+                        // break;
+                        if (localmean <= bestmean) {
+                            bestmean = localmean;
+                            idx = i;
+                        }
+                    }
+                }
+            }
         }else{
             if(abs(idx - prePortPing) > maxJump || idx == -1){
                 // 偏差过大 → 重新检测
@@ -145,13 +175,14 @@ void shengpubutu::doBottomTrack()
                             }
                         }
                     }
+                    // if(i>=  prePortPing+100) break;
                 }
                 if (candidate != -1) {
                     idx = candidate;
                 }
             }
         }
-        qDebug()<<"idx："<<idx<<"  preport: "<<prePortPing;
+        // qDebug()<<"idx："<<idx<<"  preport: "<<prePortPing;
         if (idx < 0) idx = samples.size() - 1;
         portBottomLine.append(idx);
         prePortPing = idx;
@@ -185,8 +216,8 @@ void shengpubutu::doBottomTrack()
         starboardBottomLine.append(idx);
     }
     //新增，移动平均平滑水线点
-    portBottomLine = smoothLine(portBottomLine, 100);
-    starboardBottomLine = smoothLine(starboardBottomLine, 100);
+    portsmoothLine = smoothLine(portBottomLine, 100);
+    starboardsmoothLine = smoothLine(starboardBottomLine, 100);
 
     // ---- 绘制水线 ----
     if (!scene) return;
@@ -205,15 +236,15 @@ void shengpubutu::doBottomTrack()
     //     bottomLineItems.append(item);
     // }
     //左舷绘制曲线
-    if (!portBottomLine.isEmpty()) {
+    if (!portsmoothLine.isEmpty()) {
         QPainterPath path;
-        path.moveTo(portBottomLine[0], 0);
+        path.moveTo(portsmoothLine[0], 0);
 
-        for (int ping = 1; ping < portBottomLine.size() - 1; ++ping) {
+        for (int ping = 1; ping < portsmoothLine.size() - 1; ++ping) {
             // 当前点
-            QPointF p1(portBottomLine[ping], ping);
+            QPointF p1(portsmoothLine[ping], ping);
             // 下一个点
-            QPointF p2(portBottomLine[ping + 1], ping + 1);
+            QPointF p2(portsmoothLine[ping + 1], ping + 1);
             // 控制点取两点中点，实现平滑过渡
             QPointF ctrl((p1.x() + p2.x()) / 2.0, (p1.y() + p2.y()) / 2.0);
 
@@ -235,13 +266,13 @@ void shengpubutu::doBottomTrack()
     //     bottomLineItems.append(item);
     // }
     //右舷绘制曲线
-    if (!starboardBottomLine.isEmpty()) {
+    if (!starboardsmoothLine.isEmpty()) {
         QPainterPath path;
-        path.moveTo(portWidth + starboardBottomLine[0], 0);
+        path.moveTo(portWidth + starboardsmoothLine[0], 0);
 
-        for (int ping = 1; ping < starboardBottomLine.size() - 1; ++ping) {
-            QPointF p1(portWidth + starboardBottomLine[ping], ping);
-            QPointF p2(portWidth + starboardBottomLine[ping + 1], ping + 1);
+        for (int ping = 1; ping < starboardsmoothLine.size() - 1; ++ping) {
+            QPointF p1(portWidth + starboardsmoothLine[ping], ping);
+            QPointF p2(portWidth + starboardsmoothLine[ping + 1], ping + 1);
             QPointF ctrl((p1.x() + p2.x()) / 2.0, (p1.y() + p2.y()) / 2.0);
 
             path.quadTo(p1, ctrl);
@@ -404,6 +435,158 @@ int shengpubutu::findAppropriateStartIdx(const std::vector<uint8_t> &samples, in
     }
 
     return idx;
+}
+
+QImage shengpubutu::createMergedImage()
+{
+    if (portDataAll.isEmpty() || starboardDataAll.isEmpty()) {
+        qDebug() << "No data loaded!";
+        return QImage();
+    }
+    if (portBottomLine.size() != portDataAll.size() ||
+        starboardBottomLine.size() != starboardDataAll.size()) {
+        qDebug() << "Bottom line size mismatch!";
+        return QImage();
+    }
+
+    // int numPings = portDataAll.size();
+    // int portWidth = portDataAll[0].size();
+    // int starboardWidth = starboardDataAll[0].size();
+    // int totalWidth = portWidth + starboardWidth;
+    // int totalHeight = numPings;
+    // int numPings = portDataAll.size();
+
+    // // 计算最大有效宽度
+    // int maxLeftWidth = 0;
+    // int maxRightWidth = 0;
+    // for (int ping = 0; ping < numPings; ++ping) {
+    //     if (portBottomLine[ping] >= 0)
+    //         maxLeftWidth = std::max(maxLeftWidth, portBottomLine[ping] + 1);
+    //     if (starboardBottomLine[ping] >= 0)
+    //         maxRightWidth = std::max(maxRightWidth, (int)starboardDataAll[ping].size() - starboardBottomLine[ping]);
+    // }
+
+    // int totalWidth = maxLeftWidth + maxRightWidth;
+    // int totalHeight = numPings;
+
+    // // 用 RGB32 避免调色板问题
+    // QImage mergedImg(totalWidth, totalHeight, QImage::Format_RGB32);
+    // mergedImg.fill(Qt::white);
+
+    // // ---- 左舷：0 ~ startIdx ----
+    // for (int ping = 0; ping < numPings; ++ping) {
+    //     const auto& row = portDataAll[ping];
+    //     int startIdx = portBottomLine[ping];
+    //     if (startIdx < 0 || startIdx >= (int)row.size()) continue;
+
+    //     for (int i = 0; i <= startIdx && i < (int)row.size(); ++i) {
+    //         // int gray = row[i];
+    //         int gray = 255 - row[i];  // 做反色映射
+    //         mergedImg.setPixel(i, ping, qRgb(gray, gray, gray));
+    //     }
+    // }
+
+    // // ---- 右舷：endIdx ~ row.size()-1 ----
+    // for (int ping = 0; ping < numPings; ++ping) {
+    //     const auto& row = starboardDataAll[ping];
+    //     int endIdx = starboardBottomLine[ping];
+    //     if (endIdx <= 0 || endIdx >= (int)row.size()) continue;
+
+    //     for (int i = endIdx; i < (int)row.size(); ++i) {
+    //         // int gray = row[i];
+    //         int gray = 255 - row[i];  // 做反色映射
+    //         int x = maxLeftWidth + i;
+    //         if (x >= mergedImg.width()) break;  // 越界保护
+    //         mergedImg.setPixel(x, ping, qRgb(gray, gray, gray));
+    //     }
+    // }
+
+    // return mergedImg;
+
+    int numPings = portDataAll.size();
+    // int maxLeftWidth = 0;
+    // int maxRightWidth = 0;
+
+    // // 计算最大有效宽度
+    // for (int ping = 0; ping < numPings; ++ping) {
+    //     if (portBottomLine[ping] >= 0)
+    //         maxLeftWidth = std::max(maxLeftWidth, portBottomLine[ping] + 1);
+    //     if (starboardBottomLine[ping] >= 0)
+    //         maxRightWidth = std::max(maxRightWidth,
+    //                                  (int)starboardDataAll[ping].size() - starboardBottomLine[ping]);
+    // }
+
+    // int totalWidth  = maxLeftWidth + maxRightWidth;
+
+    int maxLeftWidth = portDataAll[0].size();
+    int maxRightWidth = starboardDataAll[0].size();
+    int totalWidth = maxLeftWidth + maxRightWidth;
+    int totalHeight = numPings;
+
+    QImage mergedImg(totalWidth, totalHeight, QImage::Format_RGB32);
+    mergedImg.fill(Qt::white);
+
+    // ---- 按 ping 处理 ----
+    for (int ping = 0; ping < numPings; ++ping) {
+        const auto& portRow = portDataAll[ping];
+        const auto& starRow = starboardDataAll[ping];
+
+        int startIdx = portBottomLine[ping];
+        int endIdx   = starboardBottomLine[ping];
+        if (startIdx < 0 || startIdx >= (int)portRow.size()) continue;
+        if (endIdx <= 0 || endIdx >= (int)starRow.size()) continue;
+
+        // 左舷有效区
+        int leftWidth = startIdx + 1;
+        QImage leftImg(leftWidth, 1, QImage::Format_RGB32);
+        for (int x = 0; x < leftWidth; ++x) {
+            int gray = 255 - portRow[x];
+            leftImg.setPixel(x, 0, qRgb(gray, gray, gray));
+        }
+        leftImg = leftImg.scaled(maxLeftWidth, 1); // 拉伸到统一宽度
+
+        // 右舷有效区
+        int rightWidth = starRow.size() - endIdx;
+        QImage rightImg(rightWidth, 1, QImage::Format_RGB32);
+        for (int x = 0; x < rightWidth; ++x) {
+            int gray = 255 - starRow[endIdx + x];
+            rightImg.setPixel(x, 0, qRgb(gray, gray, gray));
+        }
+        rightImg = rightImg.scaled(maxRightWidth, 1); // 拉伸到统一宽度
+
+        // 拼接到 mergedImg
+        for (int x = 0; x < maxLeftWidth; ++x) {
+            int g = qGray(leftImg.pixel(x, 0));
+            mergedImg.setPixel(x, ping, qRgb(g, g, g));
+        }
+        for (int x = 0; x < maxRightWidth; ++x) {
+            int g = qGray(rightImg.pixel(x, 0));
+            mergedImg.setPixel(maxLeftWidth + x, ping, qRgb(g, g, g));
+        }
+    }
+
+    return mergedImg;
+}
+
+void shengpubutu::showMergedImage()
+{
+    QImage merged = createMergedImage();
+    if (merged.isNull()) {
+        qDebug() << "融合图像为空，无法显示";
+        return;
+    }
+
+    if (!scene) {
+        qDebug() << "Scene 未初始化！";
+        return;
+    }
+
+    QPixmap pixmap = QPixmap::fromImage(merged);
+    scene->clear();
+    scene->addPixmap(pixmap);
+    scene->setSceneRect(pixmap.rect());
+
+    qDebug() << "融合图像完成并显示";
 }
 
 void shengpubutu::wheelEvent(QWheelEvent *event)

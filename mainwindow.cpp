@@ -44,3 +44,9 @@ void MainWindow::on_bottomTrackButton_clicked()
     if (puTuLogic)
         puTuLogic->doBottomTrack();
 }
+
+void MainWindow::on_Imagefusion_clicked()
+{
+    if (puTuLogic)
+        puTuLogic->showMergedImage();
+}

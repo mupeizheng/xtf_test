@@ -38,6 +38,11 @@ public:
     //
     int findAppropriateStartIdx(const std::vector<uint8_t>& samples, int startIdx);
 
+    //新增融合
+    QImage createMergedImage();
+
+    void showMergedImage();
+
 protected:
     //不会生效
     void wheelEvent(QWheelEvent *event);
@@ -55,8 +60,10 @@ private:
     QVector<std::vector<uint8_t>> starboardDataAll; // 存储原始数据
 
     QVector<BottomPoint> bottomTrack;  // 存储底部追踪结果
-    QVector<int> portBottomLine;
-    QVector<int> starboardBottomLine;
+    QVector<int> portBottomLine;       //存储左舷原始索引位置
+    QVector<int> starboardBottomLine;   //存储右舷原始索引位置
+    QVector<int> portsmoothLine;       //存储左舷平滑后索引位置
+    QVector<int> starboardsmoothLine;   //存储右舷平滑后索引位置
     QVector<QGraphicsItem*> bottomLineItems;
 };
 
