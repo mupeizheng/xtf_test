@@ -7,6 +7,7 @@
 - 多通道数据处理与测试
 
 适用于 Windows 平台，Qt 5.15.2 + MinGW 构建。
+XTF Download address below: https://chesapeaketech.com/download-sonarwiz/
 
 ---
 
@@ -44,4 +45,5 @@ build/<br>
  *.qmake.stash
 
 ---
+
 
