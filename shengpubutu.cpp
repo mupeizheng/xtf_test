@@ -543,7 +543,9 @@ QImage shengpubutu::createMergedImage()
             int gray = 255 - portRow[x];
             leftImg.setPixel(x, 0, qRgb(gray, gray, gray));
         }
-        leftImg = leftImg.scaled(maxLeftWidth, 1); // 拉伸到统一宽度
+        // leftImg = leftImg.scaled(maxLeftWidth, 1); // 拉伸到统一宽度   最近邻插值->快速但不平滑
+        leftImg = leftImg.scaled(maxLeftWidth, 1, Qt::IgnoreAspectRatio, Qt::SmoothTransformation); //平滑插值
+
 
         // 右舷有效区
         int rightWidth = starRow.size() - endIdx;
@@ -552,7 +554,8 @@ QImage shengpubutu::createMergedImage()
             int gray = 255 - starRow[endIdx + x];
             rightImg.setPixel(x, 0, qRgb(gray, gray, gray));
         }
-        rightImg = rightImg.scaled(maxRightWidth, 1); // 拉伸到统一宽度
+        // rightImg = rightImg.scaled(maxRightWidth, 1); // 拉伸到统一宽度
+        rightImg = rightImg.scaled(maxRightWidth, 1, Qt::IgnoreAspectRatio, Qt::SmoothTransformation); //平滑插值
 
         // 拼接到 mergedImg
         for (int x = 0; x < maxLeftWidth; ++x) {
